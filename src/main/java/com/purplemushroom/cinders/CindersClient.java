@@ -1,4 +1,4 @@
-package com.purplemushroom;
+package com.purplemushroom.cinders;
 
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
