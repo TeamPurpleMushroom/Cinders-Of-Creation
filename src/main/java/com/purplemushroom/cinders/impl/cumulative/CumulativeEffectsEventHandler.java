@@ -1,8 +1,7 @@
 package com.purplemushroom.cinders.impl.cumulative;
 
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectTarget;
-import com.purplemushroom.cinders.common.registries.Attachments;
-import com.purplemushroom.cinders.impl.cumulative.target.BaseCumulativeEffectTarget;
+import com.purplemushroom.cinders.common.registries.ModAttachments;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -17,12 +16,12 @@ public class CumulativeEffectsEventHandler {
     @SubscribeEvent
     public static void onEntityPostTick(EntityTickEvent.Post event) {
         Entity entity = event.getEntity();
-        if (!entity.hasData(Attachments.CUMULATIVE_EFFECT_TARGET)) {
+        if (!entity.hasData(ModAttachments.CUMULATIVE_EFFECT_TARGET)) {
             return;
         }
 
-        CumulativeEffectTarget target = entity.getData(Attachments.CUMULATIVE_EFFECT_TARGET);
-        if (!(target instanceof BaseCumulativeEffectTarget<?> baseTarget)) {
+        CumulativeEffectTarget target = entity.getData(ModAttachments.CUMULATIVE_EFFECT_TARGET);
+        if (!(target instanceof CumulativeEffectTargetImpl baseTarget)) {
             return;
         }
 
@@ -46,7 +45,7 @@ public class CumulativeEffectsEventHandler {
 
         List<MutableCumulativeEffectInstance> effects = baseTarget.getMutableEffects();
         if(effects.isEmpty()) {
-            entity.removeData(Attachments.CUMULATIVE_EFFECT_TARGET);
+            entity.removeData(ModAttachments.CUMULATIVE_EFFECT_TARGET);
         }
     }
 }

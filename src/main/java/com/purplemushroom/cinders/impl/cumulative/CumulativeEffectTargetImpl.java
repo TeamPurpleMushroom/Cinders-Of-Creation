@@ -1,27 +1,37 @@
-package com.purplemushroom.cinders.impl.cumulative.target;
+package com.purplemushroom.cinders.impl.cumulative;
 
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectInstance;
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectModifierHolder;
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectTarget;
-import com.purplemushroom.cinders.impl.cumulative.CumulativeEffect;
-import com.purplemushroom.cinders.impl.cumulative.MutableCumulativeEffectInstance;
+import com.purplemushroom.cinders.api.cumulative.TargetAccess;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.neoforge.attachment.AttachmentSyncHandler;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class BaseCumulativeEffectTarget<T extends IAttachmentHolder> implements CumulativeEffectTarget {
-    private final T attachmentHolder;
+//TODO optimize packet sending?
+public class CumulativeEffectTargetImpl implements CumulativeEffectTarget {
+
+    private final IAttachmentHolder attachmentHolder;
     private final List<CumulativeEffectModifierHolder> modifierHolders;
     private final List<MutableCumulativeEffectInstance> effects;
+    private final TargetAccess targetAccess;
 
-    public BaseCumulativeEffectTarget(T attachmentHolder) {
+    public static CumulativeEffectTarget make(IAttachmentHolder attachmentHolder) {
+        return new CumulativeEffectTargetImpl(attachmentHolder);
+    }
+
+    public CumulativeEffectTargetImpl(IAttachmentHolder attachmentHolder) {
         this.attachmentHolder = attachmentHolder;
         this.modifierHolders = new ArrayList<>();
         this.effects = new ArrayList<>();
+        this.targetAccess = TargetAccess.of(attachmentHolder);
     }
 
     public void addModifierHolder(CumulativeEffectModifierHolder modifierHolder) {
@@ -45,7 +55,7 @@ public abstract class BaseCumulativeEffectTarget<T extends IAttachmentHolder> im
                 current.setValue(newValue);
 
                 if (newValue == cap) {
-                    effect.onCapReached(this);
+                    effect.onCapReached(this.getTargetAccess());
                     iterator.remove();
                     return true;
                 }
@@ -116,7 +126,28 @@ public abstract class BaseCumulativeEffectTarget<T extends IAttachmentHolder> im
     }
 
     @NotNull
-    public T get() {
+    public IAttachmentHolder get() {
         return attachmentHolder;
+    }
+
+    @Override
+    public TargetAccess getTargetAccess() {
+        return targetAccess;
+    }
+
+    public static class SyncHandler implements AttachmentSyncHandler<CumulativeEffectTarget> {
+        @Override
+        public void write(RegistryFriendlyByteBuf buf, CumulativeEffectTarget attachment, boolean initialSync) {
+            CumulativeEffectTargetImpl target = (CumulativeEffectTargetImpl) attachment;
+            MutableCumulativeEffectInstance.LIST_CODEC.encode(buf, target.effects);
+        }
+
+        @Override
+        public @Nullable CumulativeEffectTarget read(IAttachmentHolder holder, RegistryFriendlyByteBuf buf, @Nullable CumulativeEffectTarget previousValue) {
+            CumulativeEffectTargetImpl target = new CumulativeEffectTargetImpl(holder);
+            List<MutableCumulativeEffectInstance> effects = MutableCumulativeEffectInstance.LIST_CODEC.decode(buf);
+            target.effects.addAll(effects);
+            return target;
+        }
     }
 }

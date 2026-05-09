@@ -2,6 +2,7 @@ package com.purplemushroom.cinders;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
@@ -13,6 +14,11 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
+import ru.timeconqueror.timecore.api.TimeCoreAPI;
+import ru.timeconqueror.timecore.api.client.resource.location.BlockModelLocation;
+import ru.timeconqueror.timecore.api.client.resource.location.ItemModelLocation;
+import ru.timeconqueror.timecore.api.client.resource.location.TextureLocation;
+import ru.timeconqueror.timecore.common.packet.PayloadHelper;
 
 @Mod(CindersOfCreation.MODID)
 public class CindersOfCreation {
@@ -34,6 +40,8 @@ public class CindersOfCreation {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        TimeCoreAPI.setup(this);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
@@ -58,5 +66,21 @@ public class CindersOfCreation {
 
     public static ResourceLocation rl(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    }
+
+    public static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> payloadType(Class<T> clazz) {
+        return PayloadHelper.makeType(MODID, clazz);
+    }
+
+    public static TextureLocation tl(String path) {
+        return new TextureLocation(MODID, path);
+    }
+
+    public static BlockModelLocation bml(String path) {
+        return new BlockModelLocation(MODID, path);
+    }
+
+    public static ItemModelLocation iml(String path) {
+        return new ItemModelLocation(MODID, path);
     }
 }

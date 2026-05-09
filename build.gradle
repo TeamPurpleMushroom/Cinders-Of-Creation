@@ -129,7 +129,7 @@ configurations {
 
 dependencies {
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.10.0'
-    implementation 'ru.timeconqueror:TimeCore:1.21.1-1.0.0-pre.build4'
+    implementation 'ru.timeconqueror:TimeCore:1.21.1-1.0.0-pre.build6'
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

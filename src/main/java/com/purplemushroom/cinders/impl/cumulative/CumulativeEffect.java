@@ -2,10 +2,17 @@ package com.purplemushroom.cinders.impl.cumulative;
 
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectModifierHolder;
 import com.purplemushroom.cinders.api.cumulative.CumulativeEffectTarget;
+import com.purplemushroom.cinders.api.cumulative.TargetAccess;
+import com.purplemushroom.cinders.common.registries.ModRegistrar;
 import lombok.Getter;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.LivingEntity;
 
 public abstract class CumulativeEffect {
+    public static final StreamCodec<RegistryFriendlyByteBuf, CumulativeEffect> STREAM_CODEC = ByteBufCodecs.registry(ModRegistrar.CUMULATIVE_EFFECT_KEY);
+
     @Getter
     private final int baseCap;
     @Getter
@@ -19,17 +26,17 @@ public abstract class CumulativeEffect {
         this.decreaseAmount = decreaseAmount;
     }
 
-    public void onCapReached(CumulativeEffectTarget target) {
+    public void onCapReached(TargetAccess target) {
         LivingEntity living = target.getAsLiving();
-        if(living != null) {
+        if (living != null) {
             onCapReached(living);
         }
     }
 
-    public abstract void onCapReached(LivingEntity target);
+    protected abstract void onCapReached(LivingEntity target);
 
     public void onTick(MutableCumulativeEffectInstance instance, long ticks) {
-        if(ticks % decreasePeriodTicks == 0) {
+        if (ticks % decreasePeriodTicks == 0) {
             int newValue = Math.max(instance.getValue() - this.decreaseAmount, 0);
             instance.setValue(newValue);
         }
